@@ -1,0 +1,108 @@
+<html>
+<head>
+    <title>Scrolling like bene would do</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css">
+        body, html, div {
+            margin: 0;
+            padding:0;
+            font-size: inherit;
+        }
+        body, html {
+            min-width: 100%;
+            height: 100%;
+        }
+        .splitscroll__left, .splitscroll__right {
+            width: 50%;
+            float: left;
+        }
+        .splitscroll__left, .splitscroll__right {
+            height: auto;
+        }
+        .splitscroll:after {
+            content: " ";
+            display: block;
+            clear: both;
+        }
+        .splitscroll__item {
+            width: 100%;
+            height: 100%;
+            position:relative;
+        }
+        .splitscroll__mover {
+            position:absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            border: 1px solid #999;
+        }
+        .splitscroll__spread-2 {
+            height: 200%;
+        }
+        .splitscroll__spread-2 .splitscroll__mover {
+            height: 50%;
+            -webkit-backface-visibility: hidden;
+        }
+        .splitscroll__spread-3 {
+            height: 300%;
+        }
+        .splitscroll__spread-3 .splitscroll__mover {
+            height: 33.3333333%;
+        }
+
+        .splitscroll__mover--fixed {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 50%;
+            height: 100% !important;
+        }
+        .splitscroll__mover--absolute {
+            position: absolute;
+            bottom: 0;
+            top: auto;
+        }
+
+        .splitscroll__right .splitscroll__mover {
+            left: auto;
+            right: 0;
+        }
+    </style>
+    <script type="text/javascript" src="../splitscroll/polyfill.js"></script>
+    <script type="text/javascript" src="../splitscroll/splitscroll.js"></script>
+</head>
+<body>
+    <div>asdfasdfa dsa<br>asdfasdfa dsa<br>asdfasdfa dsa<br>asdfasdfa dsa<br>asdfasdfa dsa<br></div>
+    <div class="splitscroll">
+        <div class="splitscroll__left">
+            <div class="splitscroll__item splitscroll__spread-2">
+                <div class="splitscroll__mover">pierce</div>
+            </div>
+            <div class="splitscroll__item">
+                <div class="splitscroll__mover">bild</div>
+            </div>
+            <div class="splitscroll__item">
+                <div class="splitscroll__mover">bild</div>
+            </div>
+            <div class="splitscroll__item">
+                <div class="splitscroll__mover">neue section</div>
+            </div>
+        </div>
+        <div class="splitscroll__right">
+            <div class="splitscroll__item">
+                <div class="splitscroll__mover">nix</div>
+            </div>
+            <div class="splitscroll__item splitscroll__spread-3">
+                <div class="splitscroll__mover">bio</div>
+            </div>
+            <div class="splitscroll__item">
+                <div class="splitscroll__mover">neue section</div>
+            </div>
+        </div>
+    </div>
+    <div>asdfasdfa dsa<br>asdfasdfa dsa<br>asdfasdfa dsa<br>asdfasdfa dsa<br>asdfasdfa dsa<br></div>
+</body>
+</html>
