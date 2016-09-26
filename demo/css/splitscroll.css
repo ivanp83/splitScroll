@@ -1,0 +1,71 @@
+body, html, div {
+    margin: 0;
+    padding:0;
+    font-size: inherit;
+}
+body, html {
+    min-width: 100%;
+    height: 100%;
+    height: 100vh;
+}
+.splitscroll__left, .splitscroll__right {
+    width: 50%;
+    float: left;
+}
+.splitscroll__left, .splitscroll__right {
+    height: auto;
+}
+.splitscroll:after {
+    content: " ";
+    display: block;
+    clear: both;
+}
+.splitscroll__item {
+    width: 100%;
+    height: 100%;
+    height: 100vh;
+    position:relative;
+}
+.splitscroll__mover {
+    position:absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    height: 100vh;
+    box-sizing: border-box;
+    border: 1px solid #999;
+}
+.splitscroll__spread-2 {
+    height: 200%;
+    height: 200vh;
+}
+.splitscroll__spread-2 .splitscroll__mover {
+    height: 50%;
+    -webkit-backface-visibility: hidden;
+}
+.splitscroll__spread-3 {
+    height: 300%;
+}
+.splitscroll__spread-3 .splitscroll__mover {
+    height: 33.3333333%;
+}
+
+.splitscroll__mover--fixed {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    height: 100% !important;
+    height: 100vh !important;
+}
+.splitscroll__mover--absolute {
+    position: absolute;
+    bottom: 0;
+    top: auto;
+}
+
+.splitscroll__right .splitscroll__mover {
+    left: auto;
+    right: 0;
+}

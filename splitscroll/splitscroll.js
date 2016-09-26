@@ -73,6 +73,9 @@
         // initial viewport:
         this.viewport = {};
 
+        // remove events already set:
+        this.destroy();
+
         // initialize the scroller:
         this._init();
 
@@ -204,9 +207,6 @@
             me.props = props;
 
             me.scroller = new Scroller();
-
-            // destroy existing scrollers:
-            me.scroller.destroy();
 
             // run the scroller loop:
             me.scroller.onScroll( function( leftCol, rightCol ) {
