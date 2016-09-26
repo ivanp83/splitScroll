@@ -12,6 +12,7 @@
         body, html {
             min-width: 100%;
             height: 100%;
+            height: 100vh;
         }
         .splitscroll__left, .splitscroll__right {
             width: 50%;
@@ -28,6 +29,7 @@
         .splitscroll__item {
             width: 100%;
             height: 100%;
+            height: 100vh;
             position:relative;
         }
         .splitscroll__mover {
@@ -36,11 +38,13 @@
             left: 0;
             width: 100%;
             height: 100%;
+            height: 100vh;
             box-sizing: border-box;
             border: 1px solid #999;
         }
         .splitscroll__spread-2 {
             height: 200%;
+            height: 200vh;
         }
         .splitscroll__spread-2 .splitscroll__mover {
             height: 50%;
@@ -59,6 +63,7 @@
             bottom: 0;
             width: 50%;
             height: 100% !important;
+            height: 100vh !important;
         }
         .splitscroll__mover--absolute {
             position: absolute;
@@ -104,5 +109,15 @@
         </div>
     </div>
     <div>asdfasdfa dsa<br>asdfasdfa dsa<br>asdfasdfa dsa<br>asdfasdfa dsa<br>asdfasdfa dsa<br></div>
+    <script type="text/javascript">
+        (function(){
+
+            var start = function start() {
+                var splitScroller = splitScroll({});
+            }
+            document.addEventListener( "DOMContentLoaded", start );
+
+        }());
+    </script>
 </body>
 </html>
