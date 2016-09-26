@@ -1,28 +1,49 @@
+/**
+ *  Split Scroll
+ *
+ *  Version: 1.0
+ *  Licence: MIT
+ *  Author : Leif Marcus
+ */
 (function(name, definition) {
+
     if (typeof define === 'function') {
+
         // define for AMD:
         define(definition);
+
     } else if (typeof module !== 'undefined' && module.exports) {
+
         // exports for Node.js
         module.exports = definition();
+
     } else {
+
         // using the module in the browser:
         var curModule = definition(),
         global = this,
+
         originalModule = global[name];
+
         curModule.noConflict = function() {
             global[name] = originalModule;
             return curModule;
         };
+
         global[name] = curModule;
+
     }
+
 } ('splitScroll', function() {
 
     // collect splitscroll events
     window.splitScrollEvents = window.splitScrollEvents || [];
 
-    // scroll the window somehow smoother:
-    var scrollCallback = function() {};
+    // detect devices:
+    var isiPad   = navigator.userAgent.match(/iPad/i)   != null;
+    var isiPhone = navigator.userAgent.match(/iPhone/i) != null;
+
+    // global variables:
     var tick =  false;
     var rAF  =  window.requestAnimationFrame ||
                 window.webkitRequestAnimationFrame ||
@@ -40,174 +61,270 @@
                     return e;
                 };
 
-    var scroll = function scroll() {
+    /**
+     *  @class Scroller
+     *  handles the scrolling
+     */
+    var Scroller = function() {
 
-        window.dispatchEvent(new SE('scroll:smoother'));
+        // default scroll callback:
+        this.scrollCallback = function() {};
 
-        tick = !tick;
-    }
+        // initial viewport:
+        this.viewport = {};
 
-    var lessGreedyScroll = function lessGreedyScroll() {
+        // initialize the scroller:
+        this._init();
 
-        if (!tick) {
+        return this;
+    };
+    Scroller.prototype = {
 
+        /**
+         *  onScroll
+         *  Handles the scroll callback
+         *  that is fired on each scroll event
+         */
+        onScroll: function( callback ) {
+            this.scrollCallback = callback;
+        },
+
+        /**
+         *  _scroll
+         *  callback for window.onscroll
+         */
+        _scroll : function _scroll() {
+            window.dispatchEvent(new SE('scroll:splitScroll'));
             tick = !tick;
-            rAF(scroll);
+        },
 
-        }
+        /**
+         *  _scrollHandler
+         *  callback function for the custom scroll event
+         *  triggers the scroll fuction on request animation frame
+         *  @param {object} obj - this object of scroller
+         *  @return {function} - callback function for scroll event
+         */
+        _scrollHandler : function _scrollHandler( obj ) {
 
-    };
+            return function() {
+                if (!tick) {
+                    tick = !tick;
+                    rAF(obj._scroll);
+                }
+            };
 
-    // overall default properties:
-    var defaults = {
-        className: 'splitscroll'
-    };
-    var props = {};
+        },
 
-    var removeEvents = function removeEvents() {
-        splitScrollEvents.forEach( function( evt ) {
-            window.removeEventListener( evt.name, evt.listener );
-        } );
-    }
+        /**
+         *  _scrollFunc
+         *  triggers the scroll callback meghod
+         *  which is set at the onScroll method.
+         */
+        _scrollFunc: function( obj ) {
+            return function() {
+                obj.scrollCallback(
+                    document.elementFromPoint(obj.viewport.w25, 1),
+                    document.elementFromPoint(obj.viewport.w75, 1)
+                );
+            };
+        },
 
-    function getContainer(child) {
+        /**
+         *  _viewportFunc
+         *  sets the width and height on resize
+         *  and the points where to get the element.
+         */
+        _viewportFunc : function _viewportFunc( obj ) {
 
-        var node = child.parentNode;
+            return function() {
+                var width = window.innerWidth;
+                var height = window.innerHeight;
+                obj.viewport = {
+                    width: width, height: height,
+                    w25: width * 0.25,
+                    w75: width * 0.75
+                }
+            };
 
-        if (!node.className) {
-            return child;
-        }
+        },
 
-        if ( child.className.indexOf(props.className + '__item') > -1 ) {
+        _init : function _init() {
 
-            return child;
+            var viewPortFunc  = this._viewportFunc( this );
+            var scrollFunc    = this._scrollFunc( this );
+            var scrollHandler = this._scrollHandler(this);
 
-        } else if ( node.className.indexOf(props.className + '__item') > -1 ) {
+            viewPortFunc(); // run initially
 
-            return node;
+            // save global events:
+            splitScrollEvents = splitScrollEvents.concat( [
+                { name: 'scroll', listener: this._scrollHandler },
+                { name: 'scroll:splitScroll', listener: this._scrollFunc },
+                { name: 'resize', listener: this._viewportFunc }
+            ] );
 
-        }
-
-        while ( node.className && node.className.indexOf(props.className + '__item') < 0 ) {
-
-            if ( node.className.indexOf(props.className + '__item') > -1 ) {
-
-                return node;
-
+            if ( isiPad || isiPhone ) {
+                window.addEventListener( 'touchmove', scrollHandler, false );
             }
 
-            node = node.parentNode;
-        }
+            window.addEventListener( 'scroll', scrollHandler, false );
+            window.addEventListener( 'scroll:splitScroll', scrollFunc, false );
+            window.addEventListener( 'resize', viewPortFunc, false );
 
-        return child;
-    }
+        },
 
-    var addEvents = function addEvents() {
+        destroy : function destroy() {
 
-        var viewport   = {};
-        var scrollFunc = function scrollFunc() {
+            splitScrollEvents.forEach( function( evt ) {
+                window.removeEventListener( evt.name, evt.listener );
+            } );
 
-            scrollCallback(
-                getContainer( document.elementFromPoint(viewport.w25, 1) ),
-                getContainer( document.elementFromPoint(viewport.w75, 1) ),
-                viewport
-            );
+        },
 
-        };
-
-        var viewportFunc = function viewportFunc() {
-            var width = window.innerWidth;
-            var height = window.innerHeight;
-            viewport = {
-                width: width, height: height,
-                w25: width * 0.25,
-                w75: width * 0.75
-            }
-        };
-        viewportFunc(); // run initially;
-
-        window.addEventListener( 'scroll', lessGreedyScroll, false );
-        window.addEventListener( 'scroll:smoother', scrollFunc, false );
-        window.addEventListener( 'resize', viewportFunc, false );
-
-        // save events for destroying later:
-        splitScrollEvents = splitScrollEvents.concat( [
-            { name: 'scroll', listener: lessGreedyScroll },
-            { name: 'scroll:smoother', listener: scrollFunc },
-            { name: 'resize', listener: viewportFunc }
-        ] );
-    }
-
-    var runOnScroll = function runOnScroll( listener ) {
-        scrollCallback = listener;
-    }
+    };
 
     /**
-     *  Move inside container
-     *  @param {Node} container - element of the container
-     *  @param {Node} mover - the element that moves inside
+     *  @class Split Scroll
+     *  Main handling for fixing elements
+     *  inside the containers.
      */
-    var move = function move( container, mover ) {
-        var containerBounding = container.getBoundingClientRect();
-        var moverBounding = mover.getBoundingClientRect();
+    var SplitScroll = function( props ) {
 
-        var height = containerBounding.height - moverBounding.height;
-        var treshold = containerBounding.top + height;
+        this._init( props );
 
-        if (treshold > 0) {
-            mover.classList.add( props.className + '__mover--fixed' );
-            mover.classList.remove( props.className + '__mover--absolute' );
-        } else if (treshold < 0) {
-            mover.classList.add( props.className + '__mover--absolute' );
-            mover.classList.remove( props.className + '__mover--fixed' );
-        }
-        if (containerBounding.top > 0) {
-            mover.classList.remove( props.className + '__mover--absolute' );
-            mover.classList.remove( props.className + '__mover--fixed' );
-        }
-    }
+        return this;
+    };
 
-    var checkMover = function checkMover( element ) {
+    SplitScroll.prototype = {
 
-        if ( element && element.className.indexOf( 'spread' ) >= 0 ) {
+        _init: function _init( props ) {
 
-            move(
-                element,
-                element.querySelector( '.' + props.className + '__mover' )
+            var me = this;
+            me.props = props;
+
+            me.scroller = new Scroller();
+
+            // destroy existing scrollers:
+            me.scroller.destroy();
+
+            // run the scroller loop:
+            me.scroller.onScroll( function( leftCol, rightCol ) {
+
+                me._checkMover( me._getContainer( leftCol ) );
+                me._checkMover( me._getContainer( rightCol ) );
+
+            });
+        },
+
+        _hasClass : function( el, className ) {
+            return el && el.className &&
+                el.className.indexOf( this.props.name + '__' + className ) > -1;
+        },
+
+        /**
+         *  get container
+         *  gets the parent item
+         *  @param {HTMLElement} child
+         *  @return {HTMLElement}
+         */
+        _getContainer : function _getContainer( child ) {
+
+            if ( this._hasClass(child, this.props.scrollItem) ) {
+                return child;
+            }
+
+            var node = child.parentNode;
+
+            if ( this._hasClass( node, this.props.scrollItem) ) {
+                return node;
+            }
+
+            while ( node && !this._hasClass( node, this.props.scrollItem) ) {
+
+                if ( this._hasClass( node, this.props.scrollItem) ) {
+                    return node;
+                }
+
+                node = node.parentNode;
+            }
+
+            return child;
+        },
+        /**
+         *  set mover class
+         *  sets the mover css class name to fixed or absolute
+         *  @param {HTMLElement} el   - html element to apply the class to
+         *  @param {string} method    - method add or remove
+         *  @param {string} className - fixed or absolute as string
+         */
+        _setMoverClass: function _setClass( el, method, className ) {
+
+            el.classList[method](
+                this.props.name +
+                '__' + this.props.mover + '--' + className
             );
 
-        }
+        },
+        /**
+         *  Move inside container
+         *  @param {Node} container - element of the container
+         *  @param {Node} mover - the element that moves inside
+         */
+        _moverPosition : function move( container, mover ) {
+            var containerBounding = container.getBoundingClientRect();
+            var moverBounding = mover.getBoundingClientRect();
 
+            var height = containerBounding.height - moverBounding.height;
+            var treshold = containerBounding.top + height;
+
+            if (treshold > 0) {
+                this._setMoverClass( mover, 'add',    'fixed');
+                this._setMoverClass( mover, 'remove', 'absolute');
+            } else if (treshold < 0) {
+                this._setMoverClass( mover, 'add',    'absolute');
+                this._setMoverClass( mover, 'remove', 'fixed');
+            }
+            if (containerBounding.top > 0) {
+                this._setMoverClass( mover, 'remove', 'absolute');
+                this._setMoverClass( mover, 'remove', 'fixed');
+            }
+        },
+
+        _checkMover : function _checkMover( element ) {
+
+            if ( this._hasClass( element, 'spread' ) ) {
+
+                this._moverPosition(
+                    element,
+                    element.querySelector(
+                        '.' + this.props.name + '__' + this.props.mover
+                    )
+                );
+
+            }
+        }
     };
 
+    /**
+     *  @module SplitScroll
+     *  the main module export
+     *  @param {object} params - settings for split scroll
+     */
     return function splitScroll( params ) {
 
-        // setup properties:
-        props = Object.assign( defaults, params || {} );
-
-        // remove events if they are used already:
-        removeEvents();
-
-        // define scroll handling:
-        runOnScroll(function( leftCol, rightCol, viewport ) {
-
-            checkMover( leftCol );
-            checkMover( rightCol );
-
-        });
-
-        // add scroll and resize events:
-        addEvents();
-
-        return {
-            destroy: function() {
-                removeEvents();
-            }
+        // overall default properties:
+        var defaults = {
+            name       : 'splitscroll',
+            scrollItem : 'item',
+            mover      : 'mover'
         };
+
+        // setup properties:
+        var props = Object.assign( defaults, params || {} );
+
+        var splitScroll = new SplitScroll( props );
+
+        return splitScroll;
     };
 }));
-
-var start = function start() {
-    var splitScroller = splitScroll({});
-}
-document.addEventListener( "DOMContentLoaded", start );
