@@ -159,9 +159,9 @@
 
             // save global events:
             splitScrollEvents = splitScrollEvents.concat( [
-                { name: 'scroll', listener: this._scrollHandler },
-                { name: 'scroll:splitScroll', listener: this._scrollFunc },
-                { name: 'resize', listener: this._viewportFunc }
+                { name: 'scroll', listener: scrollHandler },
+                { name: 'scroll:splitScroll', listener: scrollFunc },
+                { name: 'resize', listener: viewPortFunc }
             ] );
 
             if ( isiPad || isiPhone ) {
