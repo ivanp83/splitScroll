@@ -1,4 +1,3 @@
-
 (function(name, definition) {
     if (typeof define === 'function') {
         // define for AMD:
@@ -23,6 +22,7 @@
     window.splitScrollEvents = window.splitScrollEvents || [];
 
     // scroll the window somehow smoother:
+    var scrollCallback = function() {};
     var tick =  false;
     var rAF  =  window.requestAnimationFrame ||
                 window.webkitRequestAnimationFrame ||
@@ -32,6 +32,7 @@
                 function (cb) {
                     setTimeout(cb, 1000 / 60);
                 };
+
     var SE   =  window.CustomEvent ||
                 function (type) {
                     var e = document.createEvent('Event');
@@ -40,15 +41,21 @@
                 };
 
     var scroll = function scroll() {
+
         window.dispatchEvent(new SE('scroll:smoother'));
+
         tick = !tick;
     }
 
     var lessGreedyScroll = function lessGreedyScroll() {
+
         if (!tick) {
+
             tick = !tick;
             rAF(scroll);
+
         }
+
     };
 
     // overall default properties:
@@ -56,10 +63,6 @@
         className: 'splitscroll'
     };
     var props = {};
-
-
-    // callback for scroll event:
-    var scrollCallback = function() {};
 
     var removeEvents = function removeEvents() {
         splitScrollEvents.forEach( function( evt ) {
@@ -70,33 +73,48 @@
     function getContainer(child) {
 
         var node = child.parentNode;
+
         if (!node.className) {
             return child;
         }
+
         if ( child.className.indexOf(props.className + '__item') > -1 ) {
+
             return child;
+
         } else if ( node.className.indexOf(props.className + '__item') > -1 ) {
+
             return node;
+
         }
 
         while ( node.className && node.className.indexOf(props.className + '__item') < 0 ) {
+
             if ( node.className.indexOf(props.className + '__item') > -1 ) {
+
                 return node;
+
             }
+
             node = node.parentNode;
         }
+
         return child;
     }
 
     var addEvents = function addEvents() {
-        var viewport = {};
+
+        var viewport   = {};
         var scrollFunc = function scrollFunc() {
+
             scrollCallback(
                 getContainer( document.elementFromPoint(viewport.w25, 1) ),
                 getContainer( document.elementFromPoint(viewport.w75, 1) ),
                 viewport
             );
+
         };
+
         var viewportFunc = function viewportFunc() {
             var width = window.innerWidth;
             var height = window.innerHeight;
@@ -108,10 +126,11 @@
         };
         viewportFunc(); // run initially;
 
-        window.addEventListener( 'scroll', lessGreedyScroll );
-        window.addEventListener( 'scroll:smoother', scrollFunc, true );
-        window.addEventListener( 'resize', viewportFunc, true );
+        window.addEventListener( 'scroll', lessGreedyScroll, false );
+        window.addEventListener( 'scroll:smoother', scrollFunc, false );
+        window.addEventListener( 'resize', viewportFunc, false );
 
+        // save events for destroying later:
         splitScrollEvents = splitScrollEvents.concat( [
             { name: 'scroll', listener: lessGreedyScroll },
             { name: 'scroll:smoother', listener: scrollFunc },
@@ -123,6 +142,11 @@
         scrollCallback = listener;
     }
 
+    /**
+     *  Move inside container
+     *  @param {Node} container - element of the container
+     *  @param {Node} mover - the element that moves inside
+     */
     var move = function move( container, mover ) {
         var containerBounding = container.getBoundingClientRect();
         var moverBounding = mover.getBoundingClientRect();
@@ -166,20 +190,24 @@
 
         // define scroll handling:
         runOnScroll(function( leftCol, rightCol, viewport ) {
+
             checkMover( leftCol );
             checkMover( rightCol );
+
         });
 
-        // add scroll event:
+        // add scroll and resize events:
         addEvents();
 
         return {
-            props: props
+            destroy: function() {
+                removeEvents();
+            }
         };
     };
 }));
 
 var start = function start() {
-    splitScroll({});
+    var splitScroller = splitScroll({});
 }
 document.addEventListener( "DOMContentLoaded", start );
