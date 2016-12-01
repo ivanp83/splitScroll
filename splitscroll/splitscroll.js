@@ -54,7 +54,7 @@
                 window.mozRequestAnimationFrame ||
                 window.msRequestAnimationFrame ||
                 window.oRequestAnimationFrame ||
-                function ( cb )
+                function( cb )
                 {
                     setTimeout( cb, 1000 / 60 );
                 };
@@ -125,7 +125,8 @@
         {
             return function()
             {
-                if ( !tick ) {
+                if ( !tick )
+                {
                     tick = !tick;
                     rAF( obj._scroll );
                 }
@@ -137,7 +138,7 @@
          *  triggers the scroll callback meghod
          *  which is set at the onScroll method.
          */
-        _scrollFunc: function( obj )
+        _scrollFunc : function( obj )
         {
             return function()
             {
@@ -225,7 +226,7 @@
     function SplitScroll( props )
     {
 
-        this._init( props );
+        this._init( props || {} );
 
         return this;
     }
@@ -328,7 +329,7 @@
                 this._setMoverClass( mover, 'add',    'absolute' );
                 this._setMoverClass( mover, 'remove', 'fixed' );
             }
-            if (containerBounding.top > 0)
+            if ( containerBounding.top > 0 )
             {
                 this._setMoverClass( mover, 'remove', 'absolute' );
                 this._setMoverClass( mover, 'remove', 'fixed' );
@@ -347,6 +348,23 @@
                     )
                 );
             }
+        },
+
+        destroy : function destroy()
+        {
+            var moverClass    = this.props.name +
+                                '__' + this.props.mover + '--fixed';
+            var moverSelector = '.' + moverClass;
+
+            var elements = document.querySelectorAll( moverSelector );
+
+            for ( var i = 0, len = elements.length; i < len; i++ )
+            {
+                var el = elements[ i ];
+                el.classList.remove( moverClass );
+            }
+            // remove elements:
+            this.scroller.destroy();
         }
     };
 
