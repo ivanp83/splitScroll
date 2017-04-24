@@ -288,7 +288,7 @@
                 node = node.parentNode;
             }
 
-            return child;
+            return node;
         },
         /**
          *  set mover class
